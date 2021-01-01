@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const { emit } = require("process");
 
 const app = express();
 app.use(cors());
@@ -16,8 +17,14 @@ const io = require("socket.io")(http, {
 });
 
 io.on("connection", (socket) => {
-  socket.on("message", ({ name, message }) => {
-    io.emit("message", { name, message });
+  socket.broadcast.emit("user.events", "Someone has joined");
+  socket.on("name", (name) => {
+    console.log(name + " says hello!");
+    socket.broadcast.emit("name", name);
+  });
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+    socket.broadcast.emit("user.events", "User disconnected");
   });
 });
 
